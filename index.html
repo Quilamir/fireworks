@@ -1,0 +1,117 @@
+<html>
+<body onclick="fire()" style="margin: 0">
+<canvas id="c"></canvas>
+<script>
+	var c = document.getElementById("c")
+	var ctx = c.getContext("2d")
+	c.width= window.innerWidth
+	c.height= window.innerHeight
+	
+	var FW = []
+	
+	var colors = ["red", "green", "blue", "yellow"]
+	
+	function clear() {
+		ctx.fillStyle = "black"
+		ctx.fillRect(0, 0, c.width, c.height)
+	}
+	
+	function r(n) {
+		return Math.floor(Math.random() * n)	
+	}
+	
+	function fire() {
+		FW.push({
+			h: r(100) + 100,
+			c: colors[r(colors.length)],
+			f: true,
+			e: false,
+			el: [],
+			loc: [100  + r(c.width - 100), c.height],
+			s: 5 + r(10),
+			
+		})
+		var fSound = new sound("fire.mp3")
+		fSound.play()
+	}
+	
+	function drawF() {
+		FW.forEach(function(f) {
+		
+			if (f.f) {
+				f.loc[1]-= f.s
+			}
+			
+			if (f.loc[1] < f.h &&  f.f)  {
+				var eSound = new sound("boom.mp3")
+				f.e = true
+				f.f = false
+				var size = 50 + r(100)
+				var elements = r(50) + size
+				for (var i = 0; i < elements; i++) {
+					
+					f.el.push(
+						{
+							d: r(12) + 5,
+							c: colors[r(colors.length)],
+							loc: [f.loc[0] + r(size) - Math.floor(size / 2), f.loc[1] + r(size) - Math.floor(size / 2)],
+							s: r(5) + 5
+						}
+					)
+				}
+				
+				eSound.play()
+			}
+			
+			if (f.f) {
+				ctx.fillStyle = f.c
+				ctx.fillRect(f.loc[0] , f.loc[1], 5, 5)
+			}
+			
+			if (f.e) {
+				f.el.forEach(function(ee) {
+					if (ee.d > 0) {
+						ctx.fillStyle = ee.c
+						ctx.fillRect(ee.loc[0], ee.loc[1], ee.s, ee.s)
+					}
+					ee.d--
+				})
+			}
+		})
+		
+		// filter out fireworks
+		FW = FW.filter(function(f) {
+			if (f.f) return true
+			if (f.el.some(function(elem) {
+				return elem.d > 0
+			})) return true
+			return false
+		})
+	}
+	function l() {
+	clear()
+	drawF()}
+	
+	setInterval(l, 16)
+	
+	document.body.addEventListener('touchstart', fire, false)
+	document.body.addEventListener('mousedown', fire, false)
+	document.body.addEventListener('keyup', fire, false)
+	
+	function sound(src) {
+	  this.sound = document.createElement("audio");
+	  this.sound.src = src;
+	  this.sound.setAttribute("preload", "auto");
+	  this.sound.setAttribute("controls", "none");
+	  this.sound.style.display = "none";
+	  document.body.appendChild(this.sound);
+	  this.play = function(){
+		  this.sound.play();
+	  }
+	  this.stop = function(){
+		  this.sound.pause();
+	  }
+	}
+</script>
+</body>
+</html>
